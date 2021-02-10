@@ -103,12 +103,14 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 
 //resetDBWriteConection is used to reset the WriteConnection Pool (inmemory / OnDisk).
 func resetDBWriteConection(dbFlag DbType) {
+fmt.Println("resetDBWriteConection","dbflag",dbFlag)
 	switch dbFlag {
 	case InMemory:
 		if config.Data.DBConf.RedisHAEnabled {
 			config := getInMemoryDBConfig()
 			currentMasterIP, currentMasterPort := GetCurrentMasterHostPort(config)
 			log.Info("Inmemory MasterIP:" + currentMasterIP)
+      log.Info("Inmemory currentMasterPort:" + currentMasterPort)
 			if inMemDBConnPool.MasterIP != currentMasterIP && currentMasterIP != "" {
 				writePool, _ := getPool(currentMasterIP, currentMasterPort)
 				if writePool == nil {
