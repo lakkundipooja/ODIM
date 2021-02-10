@@ -89,7 +89,10 @@ func sentinelNewClient(dbConfig *Config) *redisSentinel.SentinelClient {
 
 //GetCurrentMasterHostPort is to get the current Redis Master IP and Port from Sentinel.
 func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
+fmt.Println("GetCurrentMasterHostPort:")
 	sentinelClient := sentinelNewClient(dbConfig)
+ fmt.Println("sentinelClient",sentinelClient)
+
 	stringSlice := redisExtCalls.getMasterAddrByName(dbConfig.MasterSet, sentinelClient)
 	var masterIP string
 	var masterPort string
@@ -97,7 +100,8 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 		masterIP = stringSlice[0]
 		masterPort = stringSlice[1]
 	}
-
+ fmt.Println("masterIP",masterIP)
+ fmt.Println("masterPort",masterPort)
 	return masterIP, masterPort
 }
 
@@ -106,15 +110,18 @@ func resetDBWriteConection(dbFlag DbType) {
 fmt.Println("resetDBWriteConection","dbflag",dbFlag)
 	switch dbFlag {
 	case InMemory:
+ fmt.Println("config.Data.DBConf.RedisHAEnabled:boolean",config.Data.DBConf.RedisHAEnabled)
 		if config.Data.DBConf.RedisHAEnabled {
 			config := getInMemoryDBConfig()
+      fmt.Println("InMemoryConfig:",config)
 			currentMasterIP, currentMasterPort := GetCurrentMasterHostPort(config)
 			log.Info("Inmemory MasterIP:" + currentMasterIP)
       log.Info("Inmemory currentMasterPort:" + currentMasterPort)
 			if inMemDBConnPool.MasterIP != currentMasterIP && currentMasterIP != "" {
 				writePool, _ := getPool(currentMasterIP, currentMasterPort)
 				if writePool == nil {
-					log.Info("Write pool is nil")
+         log.Info("getPool: Write pool is nil")
+
 					return
 				}
 				inMemDBConnPool.Mux.Lock()
@@ -168,6 +175,7 @@ func getOnDiskDBConfig() *Config {
 
 //GetDBConnection is used to get the new Connection Pool for Inmemory/OnDisk DB
 func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
+ fmt.Println("GetDBConnection:")
 	var err *errors.Error
 	switch dbFlag {
 	case InMemory:
